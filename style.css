@@ -1,0 +1,254 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow: hidden;
+    background-color: #f8fafc;
+}
+
+/* Navbar Hijau dengan Aksen Kuning Matahari */
+.navbar {
+    height: 58px;
+    background: #064e3b;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 20px;
+    border-bottom: 3px solid #f59e0b;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+}
+
+.nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.badge {
+    background: #f59e0b;
+    color: #064e3b;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 4px 10px;
+    border-radius: 5px;
+    letter-spacing: 0.6px;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.navbar h1 {
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.btn-home {
+    background: #f59e0b;
+    color: #064e3b;
+    text-decoration: none;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+}
+
+.btn-home:hover {
+    background: #fbbf24;
+}
+
+.btn-toggle {
+    background: #047857;
+    color: #ffffff;
+    border: 1px solid #10b981;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: background 0.2s;
+}
+
+.btn-toggle:hover {
+    background: #059669;
+}
+
+/* Layout Utama */
+.main-container {
+    display: flex;
+    flex: 1;
+    height: calc(100vh - 58px);
+    position: relative;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 300px;
+    background: #ffffff;
+    border-right: 1px solid #d1fae5;
+    padding: 18px;
+    overflow-y: auto;
+    transition: margin-left 0.3s ease;
+    z-index: 999;
+}
+
+.sidebar.collapsed {
+    margin-left: -300px;
+}
+
+.panel-section {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.panel-section:last-child {
+    border-bottom: none;
+}
+
+.panel-section h3 {
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: #064e3b;
+    margin-bottom: 12px;
+    font-weight: 700;
+    border-left: 3px solid #f59e0b;
+    padding-left: 8px;
+}
+
+.form-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    font-size: 0.88rem;
+    color: #1e293b;
+    background-color: #f8fafc;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #f59e0b;
+}
+
+/* Item Layer & Legenda */
+.layer-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: #334155;
+    margin-bottom: 10px;
+    cursor: pointer;
+    user-select: none;
+}
+
+.layer-item input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    accent-color: #059669;
+    cursor: pointer;
+}
+
+.legend-box {
+    width: 18px;
+    height: 14px;
+    border-radius: 3px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.legend-line {
+    width: 18px;
+    height: 3px;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.legend-dot {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+/* Box Info Wilayah dengan Aksen Kuning Lembut */
+.info-box {
+    background: linear-gradient(to bottom right, #ecfdf5, #fefce8);
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #fde68a;
+    font-size: 0.85rem;
+    color: #064e3b;
+}
+
+/* Kanvas Peta */
+#map {
+    flex: 1;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Styling Tabel Pop-up Leaflet */
+.popup-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 6px;
+    font-size: 0.8rem;
+}
+
+.popup-table td {
+    padding: 4px 6px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.popup-table td:first-child {
+    font-weight: 600;
+    color: #064e3b;
+    width: 42%;
+}
+
+/* Gaya Custom Marker Ikon Fasilitas */
+.custom-pin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 50% 50% 50% 0;
+    transform: rotate(-45deg);
+    border: 2px solid #ffffff;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    color: #ffffff;
+    font-size: 13px;
+}
+
+.custom-pin i {
+    transform: rotate(45deg);
+}
+
+/* Responsif Layar HP */
+@media (max-width: 768px) {
+    .sidebar {
+        position: absolute;
+        height: 100%;
+        box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+    }
+    .navbar h1 {
+        font-size: 0.88rem;
+    }
+}

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebGIS Desa Purwosari - Kecamatan Tegalrejo</title>
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Navbar Atas -->
+    <header class="navbar">
+        <div class="nav-brand">
+            <span class="badge">WEBGIS DESA</span>
+            <h1>Portal Spasial Desa Purwosari</h1>
+        </div>
+        <button id="toggleSidebar" class="btn-toggle" title="Buka/Tutup Panel Layer">
+            ☰ Panel Layer
+        </button>
+    </header>
+
+    <!-- Kontainer Utama -->
+    <div class="main-container">
+        <!-- Sidebar Kontrol Layer -->
+        <aside id="sidebar" class="sidebar">
+            <div class="panel-section">
+                <h3>Peta Dasar (Basemap)</h3>
+                <select id="basemapSelect" class="form-select">
+                    <option value="osm" selected>OpenStreetMap</option>
+                    <option value="satellite">Citra Satelit (Esri)</option>
+                    <option value="light">Peta Terang Minimalis</option>
+                </select>
+            </div>
+
+            <div class="panel-section">
+                <h3>Layer Data Spasial</h3>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerBatas" checked>
+                    <span class="legend-box" style="border: 2px dashed #065f46; background: rgba(16, 185, 129, 0.1);"></span>
+                    Batas Administrasi Desa
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerPL" checked>
+                    <span class="legend-box" style="background: #4ade80; border: 1px solid #16a34a;"></span>
+                    Penggunaan Lahan
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerBangunan" checked>
+                    <span class="legend-box" style="background: #f59e0b; border: 1px solid #d97706;"></span>
+                    Bangunan Purwosari
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerJalan" checked>
+                    <span class="legend-line" style="background: #ef4444;"></span>
+                    Jaringan Jalan
+                </label>
+            </div>
+
+            <div class="panel-section">
+                <h3>Sarana & Toponim</h3>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerKantorDesa" checked>
+                    <span class="legend-dot" style="background: #d97706; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: #fff; font-size: 9px;">
+                        <i class="fa-solid fa-landmark"></i>
+                    </span>
+                    Kantor Pemerintahan / Desa
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerKantorBiasa" checked>
+                    <span class="legend-dot" style="background: #334155; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: #fff; font-size: 9px;">
+                        <i class="fa-solid fa-building"></i>
+                    </span>
+                    Perkantoran / Kantor Biasa
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerKesehatan" checked>
+                    <span class="legend-dot" style="background: #dc2626; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: #fff; font-size: 9px;">
+                        <i class="fa-solid fa-hospital"></i>
+                    </span>
+                    Sarana Kesehatan
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerPendidikan" checked>
+                    <span class="legend-dot" style="background: #2563eb; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: #fff; font-size: 9px;">
+                        <i class="fa-solid fa-school"></i>
+                    </span>
+                    Sarana Pendidikan
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerIbadah" checked>
+                    <span class="legend-dot" style="background: #10b981; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: #fff; font-size: 9px;">
+                        <i class="fa-solid fa-mosque"></i>
+                    </span>
+                    Sarana Ibadah
+                </label>
+                <label class="layer-item">
+                    <input type="checkbox" id="layerSaranaLain" checked>
+                    <span class="legend-dot" style="background: #059669; display: inline-flex; align-items: center; justify-content: center; width: 18px; height: 18px; color: #fff; font-size: 9px;">
+                        <i class="fa-solid fa-map-pin"></i>
+                    </span>
+                    Fasilitas & Toponim Lainnya
+                </label>
+            </div>
+
+            <div class="panel-section info-box">
+                <h3>Informasi Wilayah</h3>
+                <p><strong>Desa Purwosari</strong><br>Kecamatan Tegalrejo, Kabupaten Magelang</p>
+                <p style="margin-top: 8px; font-size: 0.78rem; color: #047857;">
+                    Centang atau hapus centang kategori sarana di atas untuk memfilter tampilan titik di peta.
+                </p>
+            </div>
+        </aside>
+
+        <!-- Kanvas Peta Leaflet -->
+        <main id="map"></main>
+    </div>
+
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <!-- Custom JS -->
+    <script src="map.js"></script>
+</body>
+</html>

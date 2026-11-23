@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SINARI — Sistem Informasi Pemetaan Desa Purwosari</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; }
+        
+        /* Latar belakang berpola titik halus (dot pattern) agar tidak polos */
+        body {
+            background-color: #f8fafc;
+            background-image: radial-gradient(#cbd5e1 1.1px, transparent 1.1px);
+            background-size: 24px 24px;
+            color: #1e293b;
+            line-height: 1.6;
+        }
+
+        /* Navbar Hijau Zamrud dengan Aksen Kuning Matahari */
+        .navbar {
+            background: #064e3b;
+            color: #ffffff;
+            padding: 16px 8%;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 3px solid #f59e0b;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+        }
+        .brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 1.3rem; letter-spacing: 0.8px; }
+        .brand i { color: #fbbf24; font-size: 1.45rem; }
+        .brand span { color: #ffffff; }
+        .nav-links { display: flex; gap: 24px; align-items: center; }
+        .nav-links a { color: #d1fae5; text-decoration: none; font-size: 0.92rem; font-weight: 500; transition: 0.2s; }
+        .nav-links a:hover { color: #fde68a; }
+        .btn-nav-peta {
+            background: #f59e0b;
+            color: #064e3b !important;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-weight: 700 !important;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35);
+            transition: 0.2s;
+        }
+        .btn-nav-peta:hover { background: #fbbf24; transform: translateY(-1px); }
+
+        /* Hero Section dengan Grid Peta & Pendar Cahaya Matahari (SINARI) */
+        .hero {
+            background-color: #064e3b;
+            background-image: 
+                radial-gradient(circle at 82% 22%, rgba(251, 191, 36, 0.28) 0%, transparent 45%),
+                radial-gradient(circle at 15% 85%, rgba(16, 185, 129, 0.25) 0%, transparent 40%),
+                linear-gradient(rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.06) 1px, transparent 1px),
+                linear-gradient(135deg, #064e3b 0%, #047857 65%, #059669 100%);
+            background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px, 100% 100%;
+            color: #ffffff;
+            padding: 95px 8% 105px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(251, 191, 36, 0.16);
+            border: 1px solid #fbbf24;
+            color: #fde68a;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            margin-bottom: 20px;
+            letter-spacing: 0.6px;
+            backdrop-filter: blur(4px);
+        }
+        .hero h1 { font-size: 2.65rem; font-weight: 800; max-width: 800px; margin: 0 auto 16px; line-height: 1.2; }
+        .hero h1 span { color: #fbbf24; }
+        .hero p { font-size: 1.05rem; color: #ecfdf5; max-width: 660px; margin: 0 auto 34px; }
+        .hero-buttons { display: flex; gap: 14px; justify-content: center; flex-wrap: wrap; }
+        .btn-primary {
+            background: #f59e0b;
+            color: #064e3b;
+            padding: 14px 28px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 800;
+            font-size: 0.98rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.4);
+            transition: 0.2s;
+        }
+        .btn-primary:hover { transform: translateY(-2px); background: #fbbf24; }
+        .btn-secondary {
+            background: rgba(255,255,255,0.08);
+            color: #ffffff;
+            border: 1.5px solid #fde68a;
+            padding: 14px 24px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.98rem;
+            transition: 0.2s;
+            backdrop-filter: blur(4px);
+        }
+        .btn-secondary:hover { background: rgba(251, 191, 36, 0.15); }
+
+        /* Section Katalog Peta */
+        .section { padding: 70px 8%; max-width: 1200px; margin: 0 auto; }
+        .section-header { text-align: center; margin-bottom: 45px; }
+        .section-header h2 { font-size: 1.9rem; color: #064e3b; font-weight: 800; margin-bottom: 8px; }
+        .section-header .accent-line {
+            width: 60px;
+            height: 4px;
+            background: #f59e0b;
+            margin: 10px auto 14px;
+            border-radius: 2px;
+        }
+        .section-header p { color: #64748b; font-size: 0.98rem; }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 24px;
+        }
+        .card {
+            background: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-top: 4px solid #10b981;
+            border-radius: 12px;
+            padding: 26px;
+            transition: 0.25s;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            border-top-color: #f59e0b;
+            box-shadow: 0 12px 24px rgba(6, 78, 59, 0.1);
+        }
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: #fef3c7;
+            color: #d97706;
+            border: 1px solid #fde68a;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.35rem;
+            margin-bottom: 18px;
+        }
+        .card h3 { font-size: 1.12rem; color: #064e3b; font-weight: 700; margin-bottom: 8px; }
+        .card p { font-size: 0.9rem; color: #64748b; margin-bottom: 20px; }
+        .card-link {
+            color: #059669;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .card-link:hover { color: #d97706; text-decoration: underline; }
+
+        /* Box Tentang SINARI */
+        .about-box {
+            background: linear-gradient(to right, #ecfdf5, #fefce8);
+            border: 1px solid #fde68a;
+            border-left: 5px solid #f59e0b;
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+        }
+        .about-box h3 { color: #064e3b; margin-bottom: 10px; font-size: 1.25rem; font-weight: 700; }
+        .about-box p { color: #334155; font-size: 0.95rem; }
+
+        /* Footer */
+        footer {
+            background: #064e3b;
+            color: #d1fae5;
+            text-align: center;
+            padding: 28px 8%;
+            font-size: 0.88rem;
+            margin-top: 40px;
+            border-top: 3px solid #f59e0b;
+        }
+        footer strong { color: #fbbf24; }
+    </style>
+</head>
+<body>
+
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="brand">
+            <i class="fa-solid fa-sun"></i>
+            <span>SINARI</span>
+        </div>
+        <div class="nav-links">
+            <a href="#beranda">Beranda</a>
+            <a href="#katalog">Katalog Peta</a>
+            <a href="#tentang">Tentang SINARI</a>
+            <a href="peta.html" class="btn-nav-peta"><i class="fa-solid fa-map"></i> Buka Peta</a>
+        </div>
+    </nav>
+
+    <!-- Hero Banner -->
+    <section id="beranda" class="hero">
+        <span class="hero-badge"><i class="fa-solid fa-sun"></i> SISTEM INFORMASI PEMETAAN DESA PURWOSARI</span>
+        <h1>Menerangi Informasi Ruang & Wilayah <span>Desa Purwosari</span></h1>
+        <p>Portal geospasial interaktif yang menyajikan data batas administrasi, penggunaan lahan, tapak bangunan, jaringan jalan, serta persebaran sarana pelayanan umum di Desa Purwosari, Kecamatan Tegalrejo.</p>
+        <div class="hero-buttons">
+            <a href="peta.html" class="btn-primary">
+                <i class="fa-solid fa-compass"></i> Jelajahi Peta Interaktif
+            </a>
+            <a href="#katalog" class="btn-secondary">Lihat Katalog Data</a>
+        </div>
+    </section>
+
+    <!-- Katalog Layer / Peta -->
+    <section id="katalog" class="section">
+        <div class="section-header">
+            <h2>Katalog Data Spasial SINARI</h2>
+            <div class="accent-line"></div>
+            <p>Pilih tema layer spasial di bawah ini untuk langsung mengeksplorasi visualisasi dan atributnya pada peta interaktif.</p>
+        </div>
+
+        <div class="card-grid">
+            <div class="card">
+                <div>
+                    <div class="card-icon"><i class="fa-solid fa-draw-polygon"></i></div>
+                    <h3>Administrasi & Penggunaan Lahan</h3>
+                    <p>Deliniasi batas wilayah administrasi Desa Purwosari beserta klasifikasi tutupan dan penggunaan lahannya.</p>
+                </div>
+                <a href="peta.html" class="card-link">Buka di Peta <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="card">
+                <div>
+                    <div class="card-icon"><i class="fa-solid fa-house-chimney"></i></div>
+                    <h3>Sebaran Tapak Bangunan</h3>
+                    <p>Data poligon tapak bangunan hunian maupun non-hunian lengkap dengan informasi atribut tiap unit bangunan.</p>
+                </div>
+                <a href="peta.html" class="card-link">Buka di Peta <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="card">
+                <div>
+                    <div class="card-icon"><i class="fa-solid fa-road"></i></div>
+                    <h3>Jaringan Jalan</h3>
+                    <p>Struktur jaringan jalan penghubung antar dusun dan aksesibilitas utama di seluruh wilayah Desa Purwosari.</p>
+                </div>
+                <a href="peta.html" class="card-link">Buka di Peta <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+
+            <div class="card">
+                <div>
+                    <div class="card-icon"><i class="fa-solid fa-school"></i></div>
+                    <h3>Sarana & Toponim Wilayah</h3>
+                    <p>Titik persebaran kantor pemerintahan, perkantoran, sarana pendidikan, kesehatan, peribadatan, dan fasilitas umum.</p>
+                </div>
+                <a href="peta.html" class="card-link">Buka di Peta <i class="fa-solid fa-arrow-right"></i></a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Tentang Wilayah -->
+    <section id="tentang" class="section" style="padding-top: 10px;">
+        <div class="about-box">
+            <h3><i class="fa-solid fa-circle-info" style="color: #d97706; margin-right: 6px;"></i> Tentang SINARI</h3>
+            <p>
+                <strong>SINARI (Sistem Informasi Pemetaan Desa Purwosari)</strong> merupakan platform WebGIS yang memvisualisasikan kondisi keruangan <strong>Desa Purwosari, Kecamatan Tegalrejo, Kabupaten Magelang</strong> secara terbuka, akurat, dan mudah diakses oleh masyarakat maupun pemangku kepentingan perencanaan wilayah.
+            </p>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer>
+        <p>&copy; 2026 <strong>SINARI — Sistem Informasi Pemetaan Desa Purwosari</strong> | Kecamatan Tegalrejo, Kabupaten Magelang</p>
+    </footer>
+
+</body>
+</html>
