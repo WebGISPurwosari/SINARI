@@ -21,7 +21,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 20px;
+    padding: 0 18px;
     border-bottom: 3px solid #f59e0b;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     z-index: 1000;
@@ -30,7 +30,7 @@ body {
 .nav-brand {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 10px;
 }
 
 .badge {
@@ -47,17 +47,43 @@ body {
 }
 
 .navbar h1 {
-    font-size: 1.05rem;
+    font-size: 1rem;
     font-weight: 600;
+}
+
+.btn-tool {
+    background: rgba(255, 255, 255, 0.12);
+    color: #fde68a;
+    border: 1px solid rgba(251, 191, 36, 0.5);
+    padding: 6px 11px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    font-weight: 600;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.2s;
+}
+
+.btn-tool:hover, .btn-tool.active {
+    background: #f59e0b;
+    color: #064e3b;
+}
+
+.btn-clear {
+    background: #dc2626;
+    color: #ffffff;
+    border-color: #ef4444;
 }
 
 .btn-home {
     background: #f59e0b;
     color: #064e3b;
     text-decoration: none;
-    padding: 6px 14px;
+    padding: 6px 13px;
     border-radius: 6px;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     font-weight: 700;
     display: inline-flex;
     align-items: center;
@@ -76,13 +102,24 @@ body {
     padding: 6px 12px;
     border-radius: 6px;
     cursor: pointer;
-    font-size: 0.85rem;
-    font-weight: 500;
-    transition: background 0.2s;
+    font-size: 0.82rem;
+    font-weight: 600;
 }
 
 .btn-toggle:hover {
     background: #059669;
+}
+
+/* Banner Alat Ukur */
+.measure-banner {
+    background: #fef3c7;
+    color: #78350f;
+    border-bottom: 1px solid #f59e0b;
+    padding: 7px 18px;
+    font-size: 0.84rem;
+    font-weight: 600;
+    text-align: center;
+    z-index: 998;
 }
 
 /* Layout Utama */
@@ -95,22 +132,22 @@ body {
 
 /* Sidebar */
 .sidebar {
-    width: 300px;
+    width: 325px;
     background: #ffffff;
     border-right: 1px solid #d1fae5;
-    padding: 18px;
+    padding: 16px;
     overflow-y: auto;
     transition: margin-left 0.3s ease;
     z-index: 999;
 }
 
 .sidebar.collapsed {
-    margin-left: -300px;
+    margin-left: -325px;
 }
 
 .panel-section {
-    margin-bottom: 20px;
-    padding-bottom: 16px;
+    margin-bottom: 18px;
+    padding-bottom: 14px;
     border-bottom: 1px solid #e2e8f0;
 }
 
@@ -119,46 +156,96 @@ body {
 }
 
 .panel-section h3 {
-    font-size: 0.78rem;
+    font-size: 0.76rem;
     text-transform: uppercase;
-    letter-spacing: 0.6px;
+    letter-spacing: 0.5px;
     color: #064e3b;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
     font-weight: 700;
     border-left: 3px solid #f59e0b;
     padding-left: 8px;
 }
 
-.form-select {
+.sub-label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 5px;
+}
+
+.form-input, .form-select {
     width: 100%;
     padding: 8px 10px;
     border: 1px solid #cbd5e1;
     border-radius: 6px;
-    font-size: 0.88rem;
+    font-size: 0.84rem;
     color: #1e293b;
     background-color: #f8fafc;
 }
 
-.form-select:focus {
+.form-input:focus, .form-select:focus {
     outline: none;
     border-color: #f59e0b;
+    background-color: #ffffff;
+}
+
+/* Hasil Pencarian */
+.search-box {
+    position: relative;
+}
+
+.search-results {
+    max-height: 170px;
+    overflow-y: auto;
+    margin-top: 6px;
+    border-radius: 6px;
+    background: #ffffff;
+}
+
+.search-item {
+    padding: 7px 10px;
+    font-size: 0.8rem;
+    border: 1px solid #e2e8f0;
+    border-top: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+}
+
+.search-item:first-child {
+    border-top: 1px solid #e2e8f0;
+    border-radius: 6px 6px 0 0;
+}
+
+.search-item:hover {
+    background: #fef3c7;
+}
+
+.search-item strong {
+    color: #064e3b;
+}
+
+.search-item span {
+    color: #64748b;
+    font-size: 0.74rem;
 }
 
 /* Item Layer & Legenda */
 .layer-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    font-size: 0.88rem;
+    gap: 9px;
+    font-size: 0.84rem;
     color: #334155;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     cursor: pointer;
     user-select: none;
 }
 
 .layer-item input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
+    width: 15px;
+    height: 15px;
     accent-color: #059669;
     cursor: pointer;
 }
@@ -179,21 +266,58 @@ body {
 }
 
 .legend-dot {
-    width: 16px;
-    height: 16px;
+    width: 18px;
+    height: 18px;
     border-radius: 50%;
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 9px;
     flex-shrink: 0;
 }
 
-/* Box Info Wilayah dengan Aksen Kuning Lembut */
+.legend-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+}
+
+.leg-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.75rem;
+    color: #334155;
+}
+
+.leg-swatch {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    flex-shrink: 0;
+}
+
+/* Box Statistik */
 .info-box {
     background: linear-gradient(to bottom right, #ecfdf5, #fefce8);
     padding: 12px;
     border-radius: 8px;
     border: 1px solid #fde68a;
-    font-size: 0.85rem;
+    font-size: 0.82rem;
     color: #064e3b;
+}
+
+.stats-list div {
+    display: flex;
+    justify-content: space-between;
+    padding: 4px 0;
+    border-bottom: 1px dashed #d1fae5;
+    font-size: 0.8rem;
+}
+
+.stats-list div:last-child {
+    border-bottom: none;
 }
 
 /* Kanvas Peta */
@@ -203,12 +327,12 @@ body {
     z-index: 1;
 }
 
-/* Styling Tabel Pop-up Leaflet */
+/* Tabel Pop-up Leaflet */
 .popup-table {
     width: 100%;
     border-collapse: collapse;
     margin-top: 6px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
 }
 
 .popup-table td {
@@ -219,10 +343,10 @@ body {
 .popup-table td:first-child {
     font-weight: 600;
     color: #064e3b;
-    width: 42%;
+    width: 44%;
 }
 
-/* Gaya Custom Marker Ikon Fasilitas */
+/* Custom Marker Ikon Fasilitas */
 .custom-pin {
     display: flex;
     align-items: center;
@@ -241,14 +365,13 @@ body {
     transform: rotate(45deg);
 }
 
-/* Responsif Layar HP */
 @media (max-width: 768px) {
     .sidebar {
         position: absolute;
         height: 100%;
         box-shadow: 2px 0 10px rgba(0,0,0,0.1);
     }
-    .navbar h1 {
-        font-size: 0.88rem;
+    .navbar h1, .btn-tool span {
+        display: none;
     }
 }
