@@ -21,7 +21,6 @@ document.getElementById('basemapSelect').addEventListener('change', function (e)
     currentBasemap = basemaps[e.target.value].addTo(map);
 });
 
-// Penyimpanan Indeks Pencarian & Statistik
 const searchIndex = [];
 const statsData = {
     bidangCount: 0,
@@ -50,7 +49,6 @@ function updateStatsPanel() {
     `;
 }
 
-// Kalkulasi Luas Geodesik Poligon (m2)
 function calculatePolygonAreaM2(latlngs) {
     if (!latlngs || latlngs.length < 3) return 0;
     const R = 6378137;
@@ -80,7 +78,6 @@ function getFeatureAreaM2(feature, layer) {
     return 0;
 }
 
-// Fungsi Pop-up Lengkap dengan Kalkulasi Luas
 function createPopupContent(title, properties, areaM2 = 0) {
     let rows = '';
     const ignoredKeys = ['FID', 'OBJECTID', 'Shape_Length', 'Id'];
@@ -102,14 +99,13 @@ function createPopupContent(title, properties, areaM2 = 0) {
     }
 
     return `
-        <div style="min-width: 195px;">
+        <div style="min-width: 205px;">
             <strong style="color: #064e3b; font-size: 0.92rem; display: block; margin-bottom: 4px; border-bottom: 2px solid #f59e0b; padding-bottom: 3px;">${title}</strong>
             <table class="popup-table">${rows}</table>
         </div>
     `;
 }
 
-// Konverter Esri JSON -> GeoJSON
 function normalizeToGeoJSON(rawData) {
     if (rawData.type === 'FeatureCollection') return rawData;
     const features = (rawData.features || []).map(f => {
@@ -124,31 +120,126 @@ function normalizeToGeoJSON(rawData) {
     return { type: 'FeatureCollection', features: features };
 }
 
-// Simbologi Standar Penatagunaan Tanah (PGT)
-function classifyPGT(properties) {
-    const text = Object.values(properties).join(' ').toLowerCase();
-    if (text.includes('sawah')) {
-        return { code: 'SAWAH', label: 'Sawah', fill: '#86efac', stroke: '#16a34a' };
+// =========================================================================
+// STANDARISASI BASISDATA PGT ATR/BPN 2019 — PENGGUNAAN TANAH (Tabel 2.5 - 2.10)
+// =========================================================================
+function classifyPenggunaanTanahPGT(properties) {
+    const text = Object.values(properties || {}).join(' ').toLowerCase();
+    const qcode = String(properties.Qcode100 || properties.Qcode50 || properties.Qcode25 || properties.CODE || '');
+
+    // 4000 / 140200: Persawahan -> RGB(200, 225, 100)
+    if (text.includes('sawah') || qcode.startsWith('4')) {
+        return { code: 'SAWAH', label: 'Persawahan (PGT 4000)', fill: 'rgb(200, 225, 100)', stroke: '#65a30d', opacity: 0.65 };
     }
-    if (text.includes('permukiman') || text.includes('kampung') || text.includes('perumahan') || text.includes('bangunan')) {
-        return { code: 'PERMUKIMAN', label: 'Permukiman', fill: '#fdba74', stroke: '#ea580c' };
+    // 1110 / 100210: Kampung Jarang -> RGB(255, 200, 200)
+    if (text.includes('kampung jarang') || qcode === '1110' || qcode === '100210') {
+        return { code: 'PERMUKIMAN', label: 'Kampung Jarang (PGT 1110)', fill: 'rgb(255, 200, 200)', stroke: '#e11d48', opacity: 0.65 };
     }
-    if (text.includes('tegal') || text.includes('ladang') || text.includes('pertanian lahan kering')) {
-        return { code: 'TEGALAN', label: 'Tegalan / Ladang', fill: '#fef08a', stroke: '#ca8a04' };
+    // 1000 / 1100 / 1200: Permukiman / Kampung Padat / Perumahan -> RGB(255, 125, 125)
+    if (text.includes('permukiman') || text.includes('kampung') || text.includes('perumahan') || text.includes('pekarangan') || text.includes('makam') || text.includes('kuburan') || qcode.startsWith('1')) {
+        return { code: 'PERMUKIMAN', label: 'Permukiman / Kampung (PGT 1000)', fill: 'rgb(255, 125, 125)', stroke: '#be123c', opacity: 0.65 };
     }
-    if (text.includes('kebun') || text.includes('perkebunan') || text.includes('hutan') || text.includes('semak')) {
-        return { code: 'KEBUN', label: 'Kebun Campur', fill: '#22c55e', stroke: '#15803d' };
+    // 5000 / 5100: Pertanian Tanah Kering Semusim / Tegalan / Ladang -> RGB(220, 200, 150)
+    if (text.includes('tegal') || text.includes('ladang') || text.includes('sayuran') || text.includes('tanah kosong') || text.includes('tanah tidak ada bangunan') || qcode.startsWith('5')) {
+        return { code: 'TEGALAN', label: 'Tegalan / Ladang (PGT 5100)', fill: 'rgb(220, 200, 150)', stroke: '#92400e', opacity: 0.65 };
     }
-    if (text.includes('sungai') || text.includes('air') || text.includes('embung') || text.includes('irigasi')) {
-        return { code: 'AIR', label: 'Tubuh Air / Sungai', fill: '#7dd3fc', stroke: '#0284c7' };
+    // 6000 / 6100: Kebun / Kebun Campuran -> RGB(255, 200, 50)
+    if (text.includes('kebun') || qcode.startsWith('6')) {
+        return { code: 'KEBUN', label: 'Kebun Campuran (PGT 6100)', fill: 'rgb(255, 200, 50)', stroke: '#b45309', opacity: 0.65 };
     }
-    if (text.includes('fasilitas') || text.includes('pendidikan') || text.includes('ibadah') || text.includes('olahraga') || text.includes('makam')) {
-        return { code: 'FASILITAS', label: 'Fasilitas Umum / Sosial', fill: '#f472b6', stroke: '#db2777' };
+    // 7000: Perkebunan -> RGB(250, 250, 125)
+    if (text.includes('perkebunan') || qcode.startsWith('7')) {
+        return { code: 'PERKEBUNAN', label: 'Perkebunan (PGT 7000)', fill: 'rgb(250, 250, 125)', stroke: '#a16207', opacity: 0.65 };
     }
-    return { code: 'KEBUN', label: 'Penggunaan Lahan Lainnya', fill: '#bbf7d0', stroke: '#15803d' };
+    // 9000: Hutan -> RGB(80, 230, 0)
+    if (text.includes('hutan') || qcode.startsWith('9')) {
+        return { code: 'HUTAN', label: 'Hutan (PGT 9000)', fill: 'rgb(80, 230, 0)', stroke: '#15803d', opacity: 0.60 };
+    }
+    // 1600 / 150200: Sarana Olahraga / Taman / Jalur Hijau -> RGB(170, 210, 140)
+    if (text.includes('olahraga') || text.includes('lapangan') || text.includes('taman') || text.includes('jalur hijau')) {
+        return { code: 'HUTAN', label: 'Ruang Terbuka / Olahraga (PGT 1600)', fill: 'rgb(170, 210, 140)', stroke: '#3f6212', opacity: 0.65 };
+    }
+    // 10000: Perairan Darat / Sungai / Kolam / Irigasi -> RGB(150, 220, 250)
+    if (text.includes('sungai') || text.includes('air') || text.includes('kolam') || text.includes('irigasi') || text.includes('embung') || text.includes('waduk') || qcode.startsWith('10')) {
+        return { code: 'AIR', label: 'Perairan Darat / Sungai (PGT 10000)', fill: 'rgb(150, 220, 250)', stroke: '#0284c7', opacity: 0.70 };
+    }
+    // 2000: Industri -> RGB(130, 90, 150)
+    if (text.includes('industri') || qcode.startsWith('2')) {
+        return { code: 'PERMUKIMAN', label: 'Industri (PGT 2000)', fill: 'rgb(130, 90, 150)', stroke: '#581c87', opacity: 0.65 };
+    }
+    // 130100: Fasilitas Pemerintahan / Jasa -> RGB(255, 255, 0)
+    if (text.includes('pemerintah') || text.includes('kantor') || text.includes('jasa')) {
+        return { code: 'PERMUKIMAN', label: 'Fasilitas Pemerintahan / Jasa (PGT 130100)', fill: 'rgb(255, 255, 0)', stroke: '#a16207', opacity: 0.70 };
+    }
+    // 130200: Fasilitas Pendidikan -> RGB(200, 200, 0)
+    if (text.includes('pendidikan') || text.includes('sekolah')) {
+        return { code: 'PERMUKIMAN', label: 'Fasilitas Pendidikan (PGT 130200)', fill: 'rgb(200, 200, 0)', stroke: '#854d0e', opacity: 0.70 };
+    }
+    // 130300: Fasilitas Kesehatan -> RGB(20, 120, 180)
+    if (text.includes('kesehatan') || text.includes('puskesmas')) {
+        return { code: 'AIR', label: 'Fasilitas Kesehatan (PGT 130300)', fill: 'rgb(20, 120, 180)', stroke: '#1e3a8a', opacity: 0.70 };
+    }
+    // 130400: Fasilitas Peribadatan -> RGB(15, 180, 140)
+    if (text.includes('ibadah') || text.includes('masjid')) {
+        return { code: 'HUTAN', label: 'Fasilitas Peribadatan (PGT 130400)', fill: 'rgb(15, 180, 140)', stroke: '#065f46', opacity: 0.70 };
+    }
+    // 11000: Tanah Terbuka -> RGB(175, 175, 175)
+    if (text.includes('terbuka') || text.includes('tandus') || text.includes('rusak') || qcode.startsWith('11')) {
+        return { code: 'TEGALAN', label: 'Tanah Terbuka (PGT 11000)', fill: 'rgb(175, 175, 175)', stroke: '#475569', opacity: 0.65 };
+    }
+    // 11300: Tanah Penggunaan Lain -> RGB(200, 210, 190)
+    return { code: 'KEBUN', label: 'Tanah Penggunaan Lain (PGT 11300)', fill: 'rgb(200, 210, 190)', stroke: '#475569', opacity: 0.60 };
 }
 
-// Simbologi Gradasi Zona Nilai Tanah (ZNT)
+// =========================================================================
+// STANDARISASI BASISDATA PGT ATR/BPN 2019 — PENGUASAAN TANAH SKALA DESA (Tabel 2.13)
+// =========================================================================
+function classifyPenguasaanTanahPGT(properties) {
+    const text = Object.values(properties || {}).join(' ').toLowerCase();
+    const ocode = String(properties.Ocode1 || properties.Ocode2 || properties.OCODE || '');
+
+    // 23100 / 23200: Tanah Milik Belum Terdaftar -> Blank / No Fill (Transparan dengan garis batas tegas)
+    if (text.includes('belum terdaftar') || text.includes('letter c') || text.includes('girik') || ocode === '23200' || ocode === '23100') {
+        return { label: 'Tanah Milik Belum Terdaftar (PGT 23200)', fill: 'transparent', stroke: '#1e293b', opacity: 0.05 };
+    }
+    // 34000: Tanah Kas Desa -> RGB(240, 0, 180)
+    if (text.includes('kas desa') || text.includes('bengkok') || ocode === '34000') {
+        return { label: 'Tanah Kas Desa (PGT 34000)', fill: 'rgb(240, 0, 180)', stroke: '#831843', opacity: 0.60 };
+    }
+    // 22100 / 22200: Tanah Wakaf -> RGB(150, 250, 250)
+    if (text.includes('wakaf') || ocode === '22100' || ocode === '22200') {
+        return { label: 'Tanah Wakaf (PGT 22100)', fill: 'rgb(150, 250, 250)', stroke: '#0e7490', opacity: 0.65 };
+    }
+    // 19000 / 18000: Hak Pakai Instansi Pemerintah / HPL -> RGB(15, 180, 140)
+    if (text.includes('instansi') || text.includes('pemerintah') || text.includes('hak pakai') || text.includes('hpl') || ocode === '19000' || ocode === '18000') {
+        return { label: 'Hak Pakai Instansi Pemerintah (PGT 19000)', fill: 'rgb(15, 180, 140)', stroke: '#065f46', opacity: 0.65 };
+    }
+    // 33000: Tanah Negara Dikuasai Negara -> RGB(170, 210, 140)
+    if (text.includes('tanah negara') || text.includes('tn ') || ocode.startsWith('33')) {
+        return { label: 'Tanah Negara (PGT 33000)', fill: 'rgb(170, 210, 140)', stroke: '#3f6212', opacity: 0.60 };
+    }
+    // 11100 / 11200: HGU Perkebunan -> RGB(255, 200, 50)
+    if (text.includes('hgu') || ocode.startsWith('11')) {
+        return { label: 'Hak Guna Usaha / HGU (PGT 11100)', fill: 'rgb(255, 200, 50)', stroke: '#b45309', opacity: 0.60 };
+    }
+    // 14100 / 15100 / 16100: HGB Badan Hukum / Industri / Jasa -> RGB(130, 90, 150)
+    if (text.includes('badan hukum') || text.includes('pt ') || text.includes('cv ') || ocode === '21100' || ocode.startsWith('14')) {
+        return { label: 'HGB / HP Badan Hukum (PGT 21100)', fill: 'rgb(255, 125, 125)', stroke: '#be123c', opacity: 0.60 };
+    }
+    // 21200: Hak Milik (HM) / HGB / HP Perorangan -> RGB(255, 200, 200)
+    if (text.includes('hak milik') || text.includes('hm') || text.includes('hgb') || text.includes('perorangan') || text.includes('sertipikat') || text.includes('nib') || ocode === '21200') {
+        return { label: 'Hak Milik / HGB / HP Perorangan (PGT 21200)', fill: 'rgb(255, 200, 200)', stroke: '#9f1239', opacity: 0.55 };
+    }
+
+    // Jika atribut bidang tanah ternyata diisi jenis penggunaan tanah (Sawah/Kebun/Tegalan/Permukiman)
+    if (text.includes('sawah') || text.includes('tegal') || text.includes('kebun') || text.includes('permukiman') || text.includes('kampung')) {
+        return classifyPenggunaanTanahPGT(properties);
+    }
+
+    // Default Bidang Tanah Terdaftar Skala Desa (Tabel 2.13 kode 21200: RGB 255.200.200)
+    return { label: 'Bidang Tanah / Hak Perorangan (PGT 21200)', fill: 'rgb(255, 200, 200)', stroke: '#475569', opacity: 0.45 };
+}
+
 function classifyZNT(properties) {
     const text = Object.values(properties).join(' ').toLowerCase();
     const numMatch = text.match(/(\d[\d.,]*)/);
@@ -166,7 +257,6 @@ function classifyZNT(properties) {
     return { fill: '#fef9c3', stroke: '#eab308' };
 }
 
-// Klasifikasi Ikon Sarana & Toponim
 function classifyFacility(properties) {
     const text = Object.values(properties).join(' ').toLowerCase();
     if (text.includes('kantor desa') || text.includes('balai desa') || text.includes('kelurahan') || text.includes('pemerintah')) {
@@ -195,14 +285,14 @@ fetch('data/admin_purwosari_json_new.json')
         const data = normalizeToGeoJSON(raw);
         layerBatas = L.geoJSON(data, {
             interactive: false,
-            style: { color: '#065f46', weight: 2.5, dashArray: '6, 6', fillColor: '#10b981', fillOpacity: 0.04 }
+            style: { color: '#065f46', weight: 2.5, dashArray: '6, 6', fillColor: '#10b981', fillOpacity: 0.03 }
         }).addTo(map);
         layerBatas.bringToBack();
         map.fitBounds(layerBatas.getBounds());
     })
     .catch(err => console.warn('Info batas admin:', err));
 
-// 4A. Layer Penggunaan Lahan (Standar PGT)
+// 4A. Layer Penggunaan Tanah (Simbologi RGB Standar PGT ATR/BPN 2019)
 let layerPL;
 fetch('data/pl_json_new.json')
     .then(res => res.json())
@@ -210,15 +300,16 @@ fetch('data/pl_json_new.json')
         const data = normalizeToGeoJSON(raw);
         layerPL = L.geoJSON(data, {
             style: function (feature) {
-                const pgt = classifyPGT(feature.properties);
-                return { color: pgt.stroke, weight: 1, fillColor: pgt.fill, fillOpacity: 0.52 };
+                const pgt = classifyPenggunaanTanahPGT(feature.properties);
+                return { color: pgt.stroke, weight: 0.9, fillColor: pgt.fill, fillOpacity: pgt.opacity };
             },
             onEachFeature: function (feature, layer) {
-                const pgt = classifyPGT(feature.properties);
+                const pgt = classifyPenggunaanTanahPGT(feature.properties);
                 feature._pgtCode = pgt.code;
+                feature._pgtObj = pgt;
                 const area = getFeatureAreaM2(feature, layer);
                 statsData.plAreaM2 += area;
-                layer.bindPopup(createPopupContent(`Penggunaan Lahan (PGT): ${pgt.label}`, feature.properties, area));
+                layer.bindPopup(createPopupContent(pgt.label, feature.properties, area));
             }
         }).addTo(map);
         layerPL.bringToBack();
@@ -227,7 +318,7 @@ fetch('data/pl_json_new.json')
     })
     .catch(err => console.warn('Info pl_json_new:', err));
 
-// 4B. Layer Pola Ruang Eksisting
+// 4B. Layer Pola Ruang Eksisting (Simbologi RGB Standar PGT ATR/BPN 2019)
 let layerPolaRuang;
 fetch('data/pola_ruang_json.json')
     .then(res => res.json())
@@ -235,45 +326,56 @@ fetch('data/pola_ruang_json.json')
         const data = normalizeToGeoJSON(raw);
         layerPolaRuang = L.geoJSON(data, {
             style: function (feature) {
-                const pgt = classifyPGT(feature.properties);
-                return { color: pgt.stroke, weight: 1.2, fillColor: pgt.fill, fillOpacity: 0.52 };
+                const pgt = classifyPenggunaanTanahPGT(feature.properties);
+                return { color: pgt.stroke, weight: 1.1, fillColor: pgt.fill, fillOpacity: pgt.opacity };
             },
             onEachFeature: function (feature, layer) {
-                const pgt = classifyPGT(feature.properties);
+                const pgt = classifyPenggunaanTanahPGT(feature.properties);
                 feature._pgtCode = pgt.code;
+                feature._pgtObj = pgt;
                 const area = getFeatureAreaM2(feature, layer);
-                layer.bindPopup(createPopupContent(`Pola Ruang Eksisting: ${pgt.label}`, feature.properties, area));
+                layer.bindPopup(createPopupContent(`Pola Ruang — ${pgt.label}`, feature.properties, area));
             }
         });
     })
     .catch(err => console.warn('Info pola_ruang_json:', err));
 
-// Filter Query Kelas PGT (Berlaku untuk Penggunaan Lahan & Pola Ruang)
+// Filter Query Kelas Penggunaan Tanah PGT
 document.getElementById('filterPGT').addEventListener('change', function (e) {
     const selected = e.target.value;
     [layerPL, layerPolaRuang].forEach(targetLayer => {
         if (!targetLayer) return;
         targetLayer.eachLayer(layer => {
             const code = layer.feature._pgtCode;
-            const pgt = classifyPGT(layer.feature.properties);
+            const pgt = layer.feature._pgtObj || classifyPenggunaanTanahPGT(layer.feature.properties);
             if (selected === 'ALL' || code === selected) {
-                layer.setStyle({ fillOpacity: 0.55, opacity: 1, fillColor: pgt.fill });
+                layer.setStyle({ fillOpacity: pgt.opacity, opacity: 1, fillColor: pgt.fill });
             } else {
-                layer.setStyle({ fillOpacity: 0.05, opacity: 0.15 });
+                layer.setStyle({ fillOpacity: 0.04, opacity: 0.15 });
             }
         });
     });
 });
 
-// 5. Layer Bidang Tanah (Persil)
+// 5. Layer Bidang Tanah / Persil (Simbologi RGB Standar Penguasaan Tanah Tabel 2.13 PGT 2019)
 let layerBidang;
 fetch('data/bidang_tanah_json.json')
     .then(res => res.json())
     .then(raw => {
         const data = normalizeToGeoJSON(raw);
         layerBidang = L.geoJSON(data, {
-            style: { color: '#b45309', weight: 1.3, fillColor: '#fbbf24', fillOpacity: 0.22 },
+            style: function (feature) {
+                const pgt = classifyPenguasaanTanahPGT(feature.properties);
+                return {
+                    color: pgt.stroke,
+                    weight: 1.2,
+                    fillColor: pgt.fill,
+                    fillOpacity: pgt.opacity
+                };
+            },
             onEachFeature: function (feature, layer) {
+                const pgt = classifyPenguasaanTanahPGT(feature.properties);
+                feature._pgtObj = pgt;
                 const area = getFeatureAreaM2(feature, layer);
                 statsData.bidangCount++;
                 statsData.bidangAreaM2 += area;
@@ -282,13 +384,13 @@ fetch('data/bidang_tanah_json.json')
                 const label = props.NIB || props.NO_HAK || props.PEMILIK || props.Nama || `Bidang #${statsData.bidangCount}`;
                 searchIndex.push({
                     title: `Persil: ${label}`,
-                    sub: Object.values(props).filter(Boolean).slice(0, 3).join(' • '),
+                    sub: `${pgt.label} • ${Object.values(props).filter(Boolean).slice(0, 2).join(' • ')}`,
                     layer: layer
                 });
 
-                layer.bindPopup(createPopupContent('Informasi Bidang Tanah', props, area));
-                layer.on('mouseover', function () { this.setStyle({ fillOpacity: 0.5, weight: 2.5 }); });
-                layer.on('mouseout', function () { this.setStyle({ fillOpacity: 0.22, weight: 1.3 }); });
+                layer.bindPopup(createPopupContent(pgt.label, props, area));
+                layer.on('mouseover', function () { this.setStyle({ fillOpacity: 0.85, weight: 2.3, color: '#064e3b' }); });
+                layer.on('mouseout', function () { this.setStyle({ fillOpacity: pgt.opacity, weight: 1.2, color: pgt.stroke }); });
             }
         }).addTo(map);
         updateStatsPanel();
@@ -314,17 +416,17 @@ fetch('data/znt_json.json')
     })
     .catch(err => console.warn('Info znt_json:', err));
 
-// 7. Layer Jaringan Jalan
+// 7. Layer Jaringan Jalan (RGB 200, 0, 0 sesuai Tabel 2.10 PGT 2019)
 let layerJalan;
 fetch('data/jalan_ln_json_new.json')
     .then(res => res.json())
     .then(raw => {
         const data = normalizeToGeoJSON(raw);
         layerJalan = L.geoJSON(data, {
-            style: { color: '#ef4444', weight: 2.5 },
+            style: { color: 'rgb(200, 0, 0)', weight: 2.5 },
             onEachFeature: function (feature, layer) {
                 statsData.jalanCount++;
-                layer.bindPopup(createPopupContent('Jaringan Jalan', feature.properties));
+                layer.bindPopup(createPopupContent('Jaringan Jalan (PGT 170000)', feature.properties));
             }
         }).addTo(map);
         updateStatsPanel();
